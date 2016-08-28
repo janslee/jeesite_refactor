@@ -16,9 +16,9 @@
 			<value>
 				/static/** = anon
 				/userfiles/** = anon
-				${adminPath}/cas = cas
+				${adminPath}/shiro-cas* = cas
 				${adminPath}/login = authc
-				${adminPath}/logout = logout
+				<!--${adminPath}/logout = logout-->
 				${adminPath}/** = user
 				/act/editor/** = user
 				/ReportServer/** = user
@@ -28,9 +28,9 @@
 	
 	<!-- 安全认证过滤器 -->
 	<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
-		<property name="securityManager" ref="securityManager" /><!-- 
-		<property name="loginUrl" value="${cas.server.url}?service=${cas.project.url}${adminPath}/cas" /> -->
-		<property name="loginUrl" value="${adminPath}/login" />
+		<property name="securityManager" ref="securityManager" />
+		<property name="loginUrl" value="${cas.server.url}?service=${cas.project.url}${adminPath}/shiro-cas" />
+		<!--<property name="loginUrl" value="${adminPath}/login" />-->
 		<property name="successUrl" value="${adminPath}?login" />
 		<property name="filters">
             <map>
@@ -42,6 +42,12 @@
 			<ref bean="shiroFilterChainDefinitions"/>
 		</property>
 	</bean>
+
+	<!-- cas和shiro结合  -->
+	<bean id="casRealm" class="com.thinkgem.jeesite.modules.sys.security.MyCasRealm" depends-on="userDao,roleDao,menuDao">
+		<property name="casServerUrlPrefix" value="${cas.server.url}"></property>
+		<property name="casService" value="${cas.project.url}${adminPath}/shiro-cas"></property>
+	</bean>
 	
 	<!-- CAS认证过滤器 -->  
 	<bean id="casFilter" class="org.apache.shiro.cas.CasFilter">  
@@ -50,7 +56,7 @@
 	
 	<!-- 定义Shiro安全管理配置 -->
 	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
-		<property name="realm" ref="systemAuthorizingRealm" />
+		<property name="realm" ref="casRealm" />
 		<property name="sessionManager" ref="sessionManager" />
 		<property name="cacheManager" ref="shiroCacheManager" />
 	</bean>
