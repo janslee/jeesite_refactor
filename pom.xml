@@ -54,6 +54,13 @@
 		<webserver.port>8181</webserver.port>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<downloadSources>true</downloadSources>
+
+		<!-- config for db-init -->
+		<jdbc.driver>com.mysql.jdbc.Driver</jdbc.driver>
+		<jdbc.url>jdbc:mysql://localhost:3306/jeesite?useUnicode=true&amp;characterEncoding=utf-8</jdbc.url>
+		<jdbc.username>root</jdbc.username>
+		<jdbc.password>root</jdbc.password>
+		<jdbc.type>mysql</jdbc.type>
 		
 	</properties>
 	
@@ -61,9 +68,9 @@
 	<repositories>
 	
 		<repository>
-			<id>jeesite-repos</id>
-			<name>Jeesite Repository</name>
-			<url>http://maven.jeesite.com/nexus/content/groups/public</url>
+			<id>Nexus</id>
+			<name>Nexus Repository</name>
+			<url>http://192.168.0.200:8081/nexus/content/groups/public/</url>
 		</repository>
 		
 	</repositories>
@@ -72,9 +79,9 @@
 	<pluginRepositories> 
 	
 		<pluginRepository>
-			<id>jeesite-repos</id>
-			<name>Jeesite Repository</name>
-			<url>http://maven.jeesite.com/nexus/content/groups/public</url>
+			<id>Nexus</id>
+			<name>Nexus Repository</name>
+			<url>http://192.168.0.200:8081/nexus/content/groups/public/</url>
 		</pluginRepository>
 		
 	</pluginRepositories> 
@@ -190,12 +197,6 @@
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>${mysql.driver.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.oracle</groupId>
-			<artifactId>ojdbc14</artifactId>
-			<version>${oracle.driver.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
@@ -914,7 +915,7 @@
 								<property name="dbunit.datatype" value="org.dbunit.ext.oracle.Oracle10DataTypeFactory" /> -->
 								
 								<property file="src/main/resources/jeesite.properties" />
-								<sql driver="${jdbc.driver}" url="${jdbc.url}" userid="${jdbc.username}" password="${jdbc.password}" 
+								<sql driver="${jdbc.driver}" url="${jdbc.url}" userid="${jdbc.username}" password="${jdbc.password}"
 									onerror="continue" encoding="${project.build.sourceEncoding}">
 									<classpath refid="maven.test.classpath" />
 									<transaction src="db/sys/jeesite_${jdbc.type}.sql"/>
