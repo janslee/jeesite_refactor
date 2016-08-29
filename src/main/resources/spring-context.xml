@@ -42,8 +42,21 @@
     </bean>
     
     <!-- 定义事务 -->
-	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+	<!--<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
 		<property name="dataSource" ref="dataSource" />
+	</bean>-->
+
+	<!-- Atomikos Transaction Manager Configuration -->
+	<bean id="atomikosTransactionManager" class="com.atomikos.icatch.jta.UserTransactionManager" init-method="init" destroy-method="close">
+		<property name="forceShutdown" value="true"/>
+	</bean>
+	<bean id="atomikosUserTransaction" class="com.atomikos.icatch.jta.UserTransactionImp">
+		<property name="transactionTimeout" value="300"/>
+	</bean>
+	<bean id="transactionManager" class="org.springframework.transaction.jta.JtaTransactionManager">
+		<property name="transactionManager" ref="atomikosTransactionManager"/>
+		<property name="userTransaction" ref="atomikosUserTransaction"/>
+		<property name="allowCustomIsolationLevels" value="true"/>
 	</bean>
 	
 	<!-- 配置 Annotation 驱动，扫描@Transactional注解的类定义事务  -->
@@ -62,43 +75,47 @@
     <task:executor id="executor" pool-size="10"/> <task:scheduler id="scheduler" pool-size="10"/>
     <task:annotation-driven scheduler="scheduler" executor="executor" proxy-target-class="true"/>
     
-	<!-- 数据源配置, 使用 BoneCP 数据库连接池 -->
-	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close"> 
-	    <!-- 数据源驱动类可不写，Druid默认会自动根据URL识别DriverClass -->
-	    <property name="driverClassName" value="${jdbc.driver}" />
-	    
-		<!-- 基本属性 url、user、password -->
-		<property name="url" value="${jdbc.url}" />
-		<property name="username" value="${jdbc.username}" />
-		<property name="password" value="${jdbc.password}" />
-		
-		<!-- 配置初始化大小、最小、最大 -->
-		<property name="initialSize" value="${jdbc.pool.init}" />
-		<property name="minIdle" value="${jdbc.pool.minIdle}" /> 
-		<property name="maxActive" value="${jdbc.pool.maxActive}" />
-		
-		<!-- 配置获取连接等待超时的时间 -->
-		<property name="maxWait" value="60000" />
-		
-		<!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
-		<property name="timeBetweenEvictionRunsMillis" value="60000" />
-		
-		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
-		<property name="minEvictableIdleTimeMillis" value="300000" />
-		
-		<property name="validationQuery" value="${jdbc.testSql}" />
-		<property name="testWhileIdle" value="true" />
-		<property name="testOnBorrow" value="false" />
-		<property name="testOnReturn" value="false" />
-		
-		<!-- 打开PSCache，并且指定每个连接上PSCache的大小（Oracle使用）
-		<property name="poolPreparedStatements" value="true" />
-		<property name="maxPoolPreparedStatementPerConnectionSize" value="20" /> -->
-		
-		<!-- 配置监控统计拦截的filters -->
-	    <property name="filters" value="stat" /> 
+	<!-- 数据源配置, 使用 atomikos 数据库连接池 -->
+	<bean id="abstractXADataSource" class="com.atomikos.jdbc.AtomikosDataSourceBean" init-method="init"
+		  destroy-method="close" abstract="true">
+		<property name="xaDataSourceClassName" value="com.mysql.jdbc.jdbc2.optional.MysqlXADataSource"/>
+		<property name="poolSize" value="${jdbc.pool.init}" />
+		<!-- 连接池中保留的最小连接数 -->
+		<property name="minPoolSize" value="${jdbc.pool.minIdle}"/>
+		<!-- 连接池中保留的最大连接数 -->
+		<property name="maxPoolSize" value="${jdbc.pool.maxActive}"/>
+		<!--连接最大存活时间，超过这个且没有正在使用的连接将自动销毁,0无限制，1000 =1000s,对于一些会自动中断连接的数据库如MySQL，可以设置这个参数，在达到这个时间的时候会自动关闭连接，下次数据库调用的时候就会新建-->
+		<property name="maxLifetime" value="28800" />
+		<!--获取连接失败重新获等待最大时间，在这个时间内如果有可用连接，将返回-->
+		<property name="borrowConnectionTimeout" value="60"/>
+		<!--最大获取数据时间，如果不设置这个值，Atomikos使用默认的5分钟，那么在处理大批量数据读取的时候，一旦超过5分钟，就会抛出类似 Resultset is close 的错误.-->
+		<property name="reapTimeout" value="60"/>
+		<!-- 最大空闲时间,60秒内未使用则连接被丢弃。若为0则永不丢弃 -->
+		<property name="maxIdleTime" value="60"/>
+		<!--连接回收时间, 连接池回收处理定时器，会根据maintenanceinterval设置的重复时间进行重复执行-->
+		<property name="maintenanceInterval" value="60"/>
+		<!--数据库连接池，最大可等待获取datasouce的时间-->
+		<property name="loginTimeout" value="60"/>
+		<property name="testQuery">
+			<value>select 1</value>
+		</property>
 	</bean>
-	
+
+	<bean id="dataSource" parent="abstractXADataSource">
+		<!-- value只要两个数据源不同就行 -->
+		<property name="uniqueResourceName" value="mysql/main" />
+		<property name="xaDataSourceClassName"
+				  value="com.mysql.jdbc.jdbc2.optional.MysqlXADataSource" />
+		<property name="xaProperties">
+			<props>
+				<prop key="url">${jdbc.url}</prop>
+				<prop key="user">${jdbc.username}</prop>
+				<prop key="password">${jdbc.password}</prop>
+				<prop key="pinGlobalTxToPhysicalConnection">true</prop>
+			</props>
+		</property>
+	</bean>
+
 	<!-- 数据源配置, 使用应用服务器的数据库连接池 
 	<jee:jndi-lookup id="dataSource" jndi-name="java:comp/env/jdbc/jeesite" />-->
 

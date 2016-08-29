@@ -2,3 +2,7 @@
 .idea
 
 **/target/
+
+*.epoch
+*.lck
+*.log
