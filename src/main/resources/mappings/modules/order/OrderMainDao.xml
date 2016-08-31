@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.prcsteel.modules.order.dao.OrderMainDao">
+    
+	<sql id="orderMainColumns">
+		a.id AS "id",
+		a.office_id AS "office.id",
+		a.user_id AS "user.id",
+		a.area_id AS "area.id",
+		a.name AS "name",
+		a.code AS "code",
+		a.type AS "type",
+		a.status AS "status",
+		a.close_reason AS "closeReason",
+		a.remark AS "remark",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		o2.name AS "office.name",
+		u3.name AS "user.name",
+		a4.name AS "area.name"
+	</sql>
+	
+	<sql id="orderMainJoins">
+		LEFT JOIN sys_office o2 ON o2.id = a.office_id
+		LEFT JOIN sys_user u3 ON u3.id = a.user_id
+		LEFT JOIN sys_area a4 ON a4.id = a.area_id
+	</sql>
+    
+	<select id="get" resultType="OrderMain">
+		SELECT 
+			<include refid="orderMainColumns"/>
+		FROM order_main a
+		<include refid="orderMainJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByProcInsId" resultType="OrderMain">
+		SELECT 
+			<include refid="orderMainColumns"/>
+		FROM order_main a
+		<include refid="orderMainJoins"/>
+		WHERE a.proc_ins_id = #{procInsId}
+	</select>
+	
+	<update id="updateInsId">
+		UPDATE order_main SET 
+			proc_ins_id = #{procInsId},
+			update_by = #{updateBy.id}, 
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="findList" resultType="OrderMain">
+		SELECT 
+			<include refid="orderMainColumns"/>
+		FROM order_main a
+		<include refid="orderMainJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="OrderMain">
+		SELECT 
+			<include refid="orderMainColumns"/>
+		FROM order_main a
+		<include refid="orderMainJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO order_main(
+			id,
+			office_id,
+			user_id,
+			area_id,
+			name,
+			code,
+			type,
+			status,
+			close_reason,
+			remark,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{office.id},
+			#{user.id},
+			#{area.id},
+			#{name},
+			#{code},
+			#{type},
+			#{status},
+			#{closeReason},
+			#{remark},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE order_main SET 	
+			office_id = #{office.id},
+			user_id = #{user.id},
+			area_id = #{area.id},
+			name = #{name},
+			code = #{code},
+			type = #{type},
+			status = #{status},
+			close_reason = #{closeReason},
+			remark = #{remark},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE order_main SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

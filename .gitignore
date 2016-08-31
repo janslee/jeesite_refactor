@@ -6,3 +6,9 @@
 *.epoch
 *.lck
 *.log
+
+.settings
+.project
+.classpath
+
+
