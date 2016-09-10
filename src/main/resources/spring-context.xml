@@ -127,5 +127,26 @@
 		<property name="username" value="${jdbc.username}"/>
 		<property name="password" value="${jdbc.password}"/>
 	</bean>-->
+
+	<bean id="atomikosJmsConnectionFactory" class="com.atomikos.jms.AtomikosConnectionFactoryBean" init-method="init">
+		<property name="uniqueResourceName" value="ActiveMQXA" />
+		<property name="xaConnectionFactory">
+			<bean class="org.apache.activemq.ActiveMQXAConnectionFactory">
+				<property name="brokerURL" value="tcp://127.0.0.1:61616" />
+				<property name="userName" value="admin"/>
+				<property name="password" value="admin"/>
+			</bean>
+		</property>
+		<property name="poolSize" value="5" />
+	</bean>
+
+	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="atomikosJmsConnectionFactory"/>
+		<property name="receiveTimeout" value="2000"/>
+		<!-- "sessionTransacted" has to be set to "true" to start an transaction for every incoming JMS message -->
+		<property name="sessionTransacted" value="true"/>
+		<!-- sessionAcknowledgeMode has to be set to javax.jms.Session.SESSION_TRANSACTED -->
+		<property name="sessionAcknowledgeMode" value="0"/>
+	</bean>
 	
 </beans>
