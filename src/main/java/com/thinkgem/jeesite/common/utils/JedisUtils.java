@@ -32,6 +32,8 @@ public class JedisUtils {
 	private static JedisPool jedisPool = SpringContextHolder.getBean(JedisPool.class);
 
 	public static final String KEY_PREFIX = Global.getConfig("redis.keyPrefix");
+	public static final int DEFAULT_CACHE_SECONDS = 0;
+
 	
 	/**
 	 * 获取缓存
@@ -62,6 +64,7 @@ public class JedisUtils {
 	 * @return 值
 	 */
 	public static Object getObject(String key) {
+
 		Object value = null;
 		Jedis jedis = null;
 		try {

@@ -3,11 +3,6 @@
  */
 package com.thinkgem.jeesite.common.utils;
 
-import java.util.Iterator;
-import java.util.Set;
-
-import org.apache.shiro.cache.Cache;
-import org.apache.shiro.cache.CacheManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,8 +14,8 @@ import org.slf4j.LoggerFactory;
 public class CacheUtils {
 	
 	private static Logger logger = LoggerFactory.getLogger(CacheUtils.class);
-	private static CacheManager cacheManager = SpringContextHolder.getBean(CacheManager.class);
-	
+//	private static CacheManager cacheManager = SpringContextHolder.getBean(CacheManager.class);
+
 	private static final String SYS_CACHE = "sysCache";
 
 	/**
@@ -60,6 +55,10 @@ public class CacheUtils {
 	public static void remove(String key) {
 		remove(SYS_CACHE, key);
 	}
+
+	private static String setJedisKey(String cacheName, String key){
+		return cacheName+"_"+key;
+	}
 	
 	/**
 	 * 获取缓存
@@ -68,7 +67,7 @@ public class CacheUtils {
 	 * @return
 	 */
 	public static Object get(String cacheName, String key) {
-		return getCache(cacheName).get(getKey(key));
+		return JedisUtils.getObject(setJedisKey(cacheName, key));
 	}
 	
 	/**
@@ -90,7 +89,18 @@ public class CacheUtils {
 	 * @param value
 	 */
 	public static void put(String cacheName, String key, Object value) {
-		getCache(cacheName).put(getKey(key), value);
+		put(cacheName, key, value, JedisUtils.DEFAULT_CACHE_SECONDS);
+	}
+
+	/**
+	 * 写入缓存
+	 * @param cacheName 模块名
+	 * @param key 键
+	 * @param value 值
+	 * @param cacheSeconds 超时时间，0为不超时
+     */
+	public static void put(String cacheName, String key, Object value, int cacheSeconds) {
+		JedisUtils.setObject(setJedisKey(cacheName, key), value, cacheSeconds);
 	}
 
 	/**
@@ -99,21 +109,22 @@ public class CacheUtils {
 	 * @param key
 	 */
 	public static void remove(String cacheName, String key) {
-		getCache(cacheName).remove(getKey(key));
+		JedisUtils.delObject(setJedisKey(cacheName, key));
+
 	}
 
-	/**
-	 * 从缓存中移除所有
-	 * @param cacheName
-	 */
-	public static void removeAll(String cacheName) {
-		Cache<String, Object> cache = getCache(cacheName);
-		Set<String> keys = cache.keys();
-		for (Iterator<String> it = keys.iterator(); it.hasNext();){
-			cache.remove(it.next());
-		}
-		logger.info("清理缓存： {} => {}", cacheName, keys);
-	}
+//	/**
+//	 * 从缓存中移除所有
+//	 * @param cacheName
+//	 */
+//	public static void removeAll(String cacheName) {
+//		Cache<String, Object> cache = getCache(cacheName);
+//		Set<String> keys = cache.keys();
+//		for (Iterator<String> it = keys.iterator(); it.hasNext();){
+//			cache.remove(it.next());
+//		}
+//		logger.info("清理缓存： {} => {}", cacheName, keys);
+//	}
 	
 	/**
 	 * 获取缓存键名，多数据源下增加数据源名称前缀
@@ -128,17 +139,17 @@ public class CacheUtils {
 		return key;
 	}
 	
-	/**
-	 * 获得一个Cache，没有则显示日志。
-	 * @param cacheName
-	 * @return
-	 */
-	private static Cache<String, Object> getCache(String cacheName){
-		Cache<String, Object> cache = cacheManager.getCache(cacheName);
-		if (cache == null){
-			throw new RuntimeException("当前系统中没有定义“"+cacheName+"”这个缓存。");
-		}
-		return cache;
-	}
+//	/**
+//	 * 获得一个Cache，没有则显示日志。
+//	 * @param cacheName
+//	 * @return
+//	 */
+//	private static Cache<String, Object> getCache(String cacheName){
+//		Cache<String, Object> cache = cacheManager.getCache(cacheName);
+//		if (cache == null){
+//			throw new RuntimeException("当前系统中没有定义“"+cacheName+"”这个缓存。");
+//		}
+//		return cache;
+//	}
 
 }

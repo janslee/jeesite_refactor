@@ -58,7 +58,7 @@
 	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
 		<property name="realm" ref="casRealm" />
 		<property name="sessionManager" ref="sessionManager" />
-		<property name="cacheManager" ref="shiroCacheManager" />
+		<!--<property name="cacheManager" ref="shiroCacheManager" />-->
 	</bean>
 	
 	<!-- 自定义会话管理配置 -->
@@ -91,16 +91,16 @@
 	<bean id="sessionDAO" class="com.thinkgem.jeesite.common.security.shiro.session.CacheSessionDAO">
 		<property name="sessionIdGenerator" ref="idGen" />
 		<property name="activeSessionsCacheName" value="activeSessionsCache" />
-		<property name="cacheManager" ref="shiroCacheManager" />
+		<!--<property name="cacheManager" ref="shiroCacheManager" />-->
 	</bean>
 	
 	<!-- 自定义系统缓存管理器-->
 <!-- 	<bean id="shiroCacheManager" class="com.thinkgem.jeesite.common.security.shiro.cache.JedisCacheManager"> -->
 <!-- 		<property name="cacheKeyPrefix" value="${redis.keyPrefix}_cache_" /> -->
 <!-- 	</bean> -->
-	<bean id="shiroCacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">
+	<!--<bean id="shiroCacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">
 		<property name="cacheManager" ref="cacheManager"/>
-	</bean>
+	</bean>-->
 	
 	<!-- 保证实现了Shiro内部lifecycle函数的bean执行 -->
 	<bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>

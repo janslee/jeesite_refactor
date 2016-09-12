@@ -67,10 +67,10 @@
 	<!-- 配置 JSR303 Bean Validator 定义 -->
 	<bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean" />
 
-	<!-- 缓存配置 -->
-	<bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+	<!-- 缓存配置  -->
+	<!--<bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
 		<property name="configLocation" value="classpath:${ehcache.configFile}" />
-	</bean>
+	</bean>-->
 	
 	<!-- 计划任务配置，用 @Service @Lazy(false)标注类，用@Scheduled(cron = "0 0 2 * * ?")标注方法 -->
     <task:executor id="executor" pool-size="10"/> <task:scheduler id="scheduler" pool-size="10"/>
